@@ -12,20 +12,15 @@ package alecmce.list
 	final internal class ListItem
 	{
 		
-		private var _mc:MovieClip;
+		public var mc:MovieClip;
 		private var _datum:ListDatum;
-
+		
 		public function ListItem(mc:MovieClip)
 		{
-			_mc = mc;
-			_mc.visible = false;
+			this.mc = mc;
+			mc.visible = false;
 		}
-
-		public function get mc():MovieClip
-		{
-			return _mc;
-		}
-
+		
 		public function get datum():ListDatum
 		{
 			return _datum;
