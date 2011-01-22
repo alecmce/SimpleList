@@ -32,10 +32,10 @@ package alecmce.list
 				return;
 			
 			_datum = datum;
-			_mc.visible = _datum != null;
+			mc.visible = _datum != null;
 			
 			if (_datum)
-				_datum.apply(_mc);
+				_datum.apply(mc);
 		}
 		
 	}
