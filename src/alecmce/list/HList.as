@@ -3,21 +3,21 @@ package alecmce.list
 	import flash.display.MovieClip;
 	
 	/**
-	 * A simple vertical-list
+	 * A simple horizontal-list
 	 * 
 	 * 2010 (c) Alec McEachran
 	 * 
 	 * Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
 	 */
-	public class VList
+	public class HList
 	{
 		private var container:MovieClip;
-		private var baseY:int;
+		private var baseX:int;
 		
 		private var items:Vector.<ListItem>;
 		private var count:uint;
 		
-		private var dy:int;
+		private var dx:int;
 		
 		private var _data:Vector.<ListDatum>;
 		private var dataLength:Number;
@@ -31,10 +31,10 @@ package alecmce.list
 		 * @param container The MovieClip that contains a collection of MovieClips
 		 * which will comprise the list items
 		 */
-		public function VList(container:MovieClip)
+		public function HList(container:MovieClip)
 		{
 			this.container = container;
-			this.baseY = container.y;
+			this.baseX = container.x;
 			
 			init();
 		}
@@ -69,7 +69,7 @@ package alecmce.list
 		public function set position(value:Number):void
 		{
 			_position = value != value ? 0 : value;
-			container.y = baseY - _position * dy;
+			container.x = baseX - _position * dx;
 			
 			var newIndex:int = _position | 0;
 			if (_index == newIndex)
@@ -101,7 +101,7 @@ package alecmce.list
 		private function init():void
 		{
 			var children:Vector.<MovieClip> = generateChildren(container);
-			this.dy = normalizeHeight(children);
+			this.dx = normalizeHeight(children);
 			this.items = generateItems(children);
 			this.count = items.length;
 			
@@ -144,15 +144,15 @@ package alecmce.list
 			var first:MovieClip = children[0];
 			var last:MovieClip = children[count - 1];
 
-			var bottom:int = last.getRect(last.parent).top;
-			var top:int = first.getRect(first.parent).top;
-			var init:int = first.y;
-			var dy:int = (bottom - top) / (count - 1);
+			var right:int = last.getRect(last.parent).left;
+			var left:int = first.getRect(first.parent).left;
+			var init:int = first.x;
+			var dx:int = (right - left) / (count - 1);
 			
 			for (var i:int = 0; i < count; i++)
-				children[i].y = init + i * dy;
+				children[i].x = init + i * dx;
 			
-			return dy;
+			return dx;
 		}
 		
 		/**
@@ -160,7 +160,7 @@ package alecmce.list
 		 */
 		private function sort(a:MovieClip, b:MovieClip):int
 		{
-			return a.y < b.y ? -1 : a.y > b.y ? 1 : 0;
+			return a.x < b.x ? -1 : a.x > b.x ? 1 : 0;
 		}
 		
 		/**
@@ -191,7 +191,7 @@ package alecmce.list
 				var n:int = i + _index;
 				var item:ListItem = items[n % count];
 				
-				item.mc.y = n * dy;
+				item.mc.x = n * dx;
 				item.datum = n < dataLength ? _data[n] : null;
 			}
 		}
