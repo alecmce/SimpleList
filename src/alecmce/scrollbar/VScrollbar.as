@@ -10,6 +10,13 @@ package alecmce.scrollbar
 	import flash.events.MouseEvent;
 	import flash.geom.Rectangle;
 
+	/**
+	 * A simple vertical scroll-bar
+	 * 
+	 * 2010 (c) Alec McEachran
+	 * 
+	 * Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
+	 */
 	public class VScrollbar
 	{
 		private static const DURATION:Number = 0.3;
