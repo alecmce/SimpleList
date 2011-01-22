@@ -2,6 +2,13 @@ package alecmce.list
 {
 	import flash.display.MovieClip;
 	
+	/**
+	 * 
+	 * 
+	 * 2010 (c) Alec McEachran
+	 * 
+	 * 
+	 */
 	public class VList
 	{
 		private var container:MovieClip;
@@ -18,6 +25,12 @@ package alecmce.list
 		private var _position:Number;
 		private var _index:int;
 		
+		/**
+		 * Class Constructor
+		 * 
+		 * @param container The MovieClip that contains a collection of MovieClips
+		 * which will comprise the list items
+		 */
 		public function VList(container:MovieClip)
 		{
 			this.container = container;
@@ -26,11 +39,9 @@ package alecmce.list
 			init();
 		}
 		
-		public function get data():Vector.<ListDatum>
-		{
-			return _data;
-		}
-		
+		/**
+		 * set the data that defines the list
+		 */
 		public function set data(data:Vector.<ListDatum>):void
 		{
 			if (_data == data)
@@ -42,9 +53,18 @@ package alecmce.list
 		}
 		
 		/**
+		 * get the data that defines the list
+		 */
+		public function get data():Vector.<ListDatum>
+		{
+			return _data;
+		}
+		
+		/**
 		 * set the list position
 		 * 
-		 * @param value The 
+		 * @param value The index of the top item as a decimal, so that 0.5 corresponds
+		 * to the position where half of the first item is visible
 		 */
 		public function set position(value:Number):void
 		{
@@ -52,7 +72,7 @@ package alecmce.list
 			container.y = baseY - _position * dy;
 			
 			var newIndex:int = _position | 0;
-			if (_position == newIndex)
+			if (_index == newIndex)
 				return;
 			
 			_index = newIndex;
@@ -60,7 +80,7 @@ package alecmce.list
 		}
 		
 		/**
-		 * 
+		 * retrieve the list position
 		 */
 		public function get position():Number
 		{
@@ -68,7 +88,7 @@ package alecmce.list
 		}
 		
 		/**
-		 * 
+		 * retrieve the index of the top-most visible list item 
 		 */
 		public function get index():int
 		{
@@ -128,14 +148,16 @@ package alecmce.list
 			var top:int = first.getRect(first.parent).top;
 			var init:int = first.y;
 			var dy:int = (bottom - top) / (count - 1);
-			trace('dy: ' + (dy));
-
+			
 			for (var i:int = 0; i < count; i++)
 				children[i].y = init + i * dy;
 			
 			return dy;
 		}
 		
+		/**
+		 * sort the list to ensure the children are top-down
+		 */
 		private function sort(a:MovieClip, b:MovieClip):int
 		{
 			return a.y < b.y ? -1 : a.y > b.y ? 1 : 0;
