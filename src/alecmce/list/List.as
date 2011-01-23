@@ -6,21 +6,25 @@ package alecmce.list
 	import flash.display.MovieClip;
 	
 	/**
-	 * A simple vertical-list
+	 * A simple (vertical or horizontal) list
 	 * 
 	 * 2010 (c) Alec McEachran
 	 * 
 	 * Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
 	 */
-	public class VList
+	public class List
 	{
 		private var container:MovieClip;
-		private var baseY:int;
+		
+		private var _axis:ListAxis;
+		private var property:String;
+		
 		
 		private var _items:Vector.<ListItem>;
 		private var count:uint;
 		
-		private var dy:int;
+		private var basePosition:int;
+		private var itemSpacing:int;
 		
 		private var _data:Vector.<ListDatum>;
 		private var dataLength:Number;
@@ -36,14 +40,22 @@ package alecmce.list
 		 * @param container The MovieClip that contains a collection of MovieClips
 		 * which will comprise the list items
 		 */
-		public function VList(container:MovieClip)
+		public function List(container:MovieClip, axis:ListAxis = null)
 		{
 			this.container = container;
-			this.baseY = container.y;
+			_axis = axis;
 			
-			_dataChanged = new Signal(VList);
+			_dataChanged = new Signal(List);
 			
 			init();
+		}
+		
+		/**
+		 * get the axis along which the list scrolls
+		 */
+		public function get axis():ListAxis
+		{
+			return _axis;
 		}
 		
 		/**
@@ -87,7 +99,7 @@ package alecmce.list
 		public function set position(value:Number):void
 		{
 			_position = value != value ? 0 : value;
-			container.y = baseY - _position * dy;
+			container[property] = basePosition - _position * itemSpacing;
 			
 			var newIndex:int = _position | 0;
 			if (_index == newIndex)
@@ -119,16 +131,20 @@ package alecmce.list
 		private function init():void
 		{
 			var children:Vector.<MovieClip> = generateChildren(container);
-			this.dy = normalizeHeight(children);
-			this._items = generateItems(children);
-			this.count = _items.length;
+
+			_axis ||= determineAxis(children);
+			property = _axis.property;
+			basePosition = container[property];
+			itemSpacing = normalizeSpacing(children);
+			_items = generateItems(children);
+			count = _items.length;
 			
 			_position = 0;
 			_index = 0;
 			
 			updateItems();
 		}
-		
+
 		/**
 		 * inspects the container and pulls out all the MovieClips
 		 * 
@@ -150,27 +166,57 @@ package alecmce.list
 		}
 		
 		/**
+		 * inspects the axis and determines in which direction this list goes
+		 */
+		private function determineAxis(children:Vector.<MovieClip>):ListAxis
+		{
+			var lowX:int = int.MAX_VALUE;
+			var lowY:int = int.MAX_VALUE;
+			var highX:int = -int.MAX_VALUE;
+			var highY:int = -int.MAX_VALUE;
+			
+			var x:int;
+			var y:int;
+			
+			var len:int = children.length;
+			for (var i:int = 0; i < len; i++)
+			{
+				x = children[i].x | 0;
+				y = children[i].y | 0;
+				
+				if (x < lowX) lowX = x;
+				if (x > highX) highX = x;
+				if (y < lowY) lowY = y;
+				if (y > highY) highY = y;
+			}
+			
+			return (highY - lowY) > (highX - lowX) ? ListAxis.Y_AXIS : ListAxis.X_AXIS;
+		}
+		
+		/**
 		 * inspects the MovieClip list and normalizes the distance between them
 		 * 
 		 * @return The mean distance between list items
 		 */
-		private function normalizeHeight(children:Vector.<MovieClip>):int
+		private function normalizeSpacing(children:Vector.<MovieClip>):int
 		{
 			children = children.sort(sort);
 			
 			var count:uint = children.length;
 			var first:MovieClip = children[0];
 			var last:MovieClip = children[count - 1];
+			
+			var rectProperty:String = _axis == ListAxis.X_AXIS ? "left" : "top";
 
-			var bottom:int = last.getRect(last.parent).top;
-			var top:int = first.getRect(first.parent).top;
-			var init:int = first.y;
-			var dy:int = (bottom - top) / (count - 1);
+			var max:int = last.getRect(last.parent)[rectProperty];
+			var min:int = first.getRect(first.parent)[rectProperty];
+			var init:int = first[property];
+			var itemSpacing:int = (max - min) / (count - 1);
 			
 			for (var i:int = 0; i < count; i++)
-				children[i].y = init + i * dy;
+				children[i][property] = init + i * itemSpacing;
 			
-			return dy;
+			return itemSpacing;
 		}
 		
 		/**
@@ -178,7 +224,7 @@ package alecmce.list
 		 */
 		private function sort(a:MovieClip, b:MovieClip):int
 		{
-			return a.y < b.y ? -1 : a.y > b.y ? 1 : 0;
+			return a[property] < b[property] ? -1 : a[property] > b[property] ? 1 : 0;
 		}
 		
 		/**
@@ -209,7 +255,7 @@ package alecmce.list
 				var n:int = i + _index;
 				var item:ListItem = _items[n % count];
 				
-				item.mc.y = n * dy;
+				item.mc[property] = n * itemSpacing;
 				item.datum = n < dataLength ? _data[n] : null;
 			}
 		}
@@ -218,6 +264,6 @@ package alecmce.list
 		{
 			return _dataChanged;
 		}
-		
+
 	}
 }

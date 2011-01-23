@@ -1,7 +1,7 @@
 package
 {
 	import alecmce.list.ListDatum;
-	import alecmce.list.VList;
+	import alecmce.list.List;
 	import alecmce.scrollbar.VScrollbar;
 
 	import flash.display.Loader;
@@ -15,7 +15,7 @@ package
 		[Embed(source="../bin/list.swf")]
 		private var assetClass:Class;
 		
-		protected var list:VList;
+		protected var list:List;
 		private var scrollbar:VScrollbar;
 		
 		public function Example()
@@ -38,7 +38,7 @@ package
 		
 		protected function setup(content:MovieClip):void
 		{
-			list = new VList(content.list);
+			list = new List(content.list);
 			list.data = generateData();
 			
 			scrollbar = new VScrollbar(content.knob, content.groove);

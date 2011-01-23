@@ -1,11 +1,11 @@
 package
 {
-	import alecmce.list.extensions.VDragReordering;
+	import alecmce.list.extensions.DragReordering;
 	import flash.display.MovieClip;
 
 	public class ExampleWithReordering extends Example
 	{
-		private var reordering:VDragReordering;
+		private var reordering:DragReordering;
 		
 		public function ExampleWithReordering()
 		{
@@ -16,7 +16,7 @@ package
 		{
 			super.setup(content);
 			
-			reordering = new VDragReordering(list, 4);
+			reordering = new DragReordering(list, 4);
 			reordering.isEnabled = true;
 		}
 

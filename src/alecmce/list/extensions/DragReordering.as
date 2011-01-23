@@ -1,8 +1,9 @@
 package alecmce.list.extensions
 {
+	import alecmce.list.ListAxis;
 	import alecmce.list.ListDatum;
 	import alecmce.list.ListItem;
-	import alecmce.list.VList;
+	import alecmce.list.List;
 
 	import com.gskinner.motion.GTween;
 
@@ -12,14 +13,16 @@ package alecmce.list.extensions
 	import flash.events.MouseEvent;
 	import flash.utils.Dictionary;
 	
-	public class VDragReordering
+	public class DragReordering
 	{
 		private static const DURATION:Number = 0.3;
 		
 		/** how closely you need to get to the next item before the shift is triggered (must be > 0.5) */
 		private static const STIFFNESS:Number = 0.6;
 
-		private var list:VList;
+		private var list:List;
+		private var property:String;
+		private var mouseProperty:String;
 		private var items:Vector.<ListItem>;
 		private var visibleItems:uint;
 		
@@ -31,23 +34,28 @@ package alecmce.list.extensions
 		private var dragItem:ListItem;
 		private var dragMC:MovieClip;
 		private var dragTween:GTween;
-		private var startY:Number;
-		private var offsetY:Number;
+		private var startPosition:Number;
+		private var offsetPosition:Number;
 		private var index:int;
 		
 		private var aboveMC:MovieClip;
 		private var aboveTween:GTween;
 		private var aboveLimit:Number;
-		private var aboveY:Number;
+		private var abovePosition:Number;
 		
 		private var belowMC:MovieClip;
 		private var belowTween:GTween;
 		private var belowLimit:Number;
-		private var belowY:Number;
+		private var belowPosition:Number;
 
-		public function VDragReordering(list:VList, visibleItems:uint)
+		public function DragReordering(list:List, visibleItems:uint)
 		{
 			this.list = list;
+
+			var axis:ListAxis = list.axis;
+			this.property = axis.property;
+			this.mouseProperty = axis == ListAxis.X_AXIS ? "mouseX" : "mouseY";
+			
 			this.items = list.items;
 			this.visibleItems = visibleItems;
 			
@@ -130,7 +138,7 @@ package alecmce.list.extensions
 			return item.mc;
 		}
 		
-		private function onDataChanged(list:VList):void
+		private function onDataChanged(list:List):void
 		{
 			var currentlyEnabled:Boolean = isEnabled;
 			isEnabled = false;
@@ -146,8 +154,8 @@ package alecmce.list.extensions
 			dragTween = new GTween(dragMC, DURATION, null, {onComplete:onTweenComplete});
 			index = items.indexOf(map[dragMC]);
 			stage = dragMC.stage;
-			startY = dragMC.y;
-			offsetY = startY - dragMC.parent.mouseY;
+			startPosition = dragMC[property];
+			offsetPosition = startPosition - dragMC.parent[mouseProperty];
 			
 			getAboveStats();
 			getBelowStats();
@@ -163,8 +171,8 @@ package alecmce.list.extensions
 				return;
 			
 			aboveTween = new GTween(aboveMC, DURATION);
-			aboveY = aboveMC.y;
-			aboveLimit = (aboveY - startY) * STIFFNESS;
+			abovePosition = aboveMC[property];
+			aboveLimit = (abovePosition - startPosition) * STIFFNESS;
 		}
 
 		private function getBelowStats():void
@@ -180,39 +188,39 @@ package alecmce.list.extensions
 				return;
 			
 			belowTween = new GTween(belowMC, DURATION);
-			belowY = belowMC.y;
-			belowLimit = (belowY - startY) * STIFFNESS;
+			belowPosition = belowMC[property];
+			belowLimit = (belowPosition - startPosition) * STIFFNESS;
 		}
 		
 		private function onMouseMove(event:MouseEvent):void
 		{
-			var y:Number = dragMC.parent.mouseY + offsetY;
-			if (y < startY)
+			var p:Number = dragMC.parent[mouseProperty] + offsetPosition;
+			if (p < startPosition)
 			{
 				if (aboveMC)
 				{
-					if (y - startY < aboveLimit)
+					if (p - startPosition < aboveLimit)
 						shiftUp();
 				}
 				else
 				{
-					y = startY;
+					p = startPosition;
 				}
 			}
-			else if (y > startY)
+			else if (p > startPosition)
 			{
 				if (belowMC)
 				{
-					if (y - startY > belowLimit)
+					if (p - startPosition > belowLimit)
 						shiftDown();
 				}
 				else
 				{
-					y = startY;
+					p = startPosition;
 				}
 			}
 			
-			dragMC.y = y;
+			dragMC[property] = p;
 			event.updateAfterEvent();
 		}
 
@@ -230,11 +238,11 @@ package alecmce.list.extensions
 			
 			belowTween = aboveTween;
 			belowMC = aboveMC;
-			belowY = startY;
-			belowTween.setValue("y", belowY);
+			belowPosition = startPosition;
+			belowTween.setValue(property, belowPosition);
 
-			startY = aboveY;
-			belowLimit = (belowY - aboveY) * STIFFNESS;
+			startPosition = abovePosition;
+			belowLimit = (belowPosition - abovePosition) * STIFFNESS;
 			
 			index = n;
 			
@@ -255,11 +263,11 @@ package alecmce.list.extensions
 			
 			aboveTween = belowTween;
 			aboveMC = belowMC;
-			aboveY = startY;
-			aboveTween.setValue("y", aboveY);
+			abovePosition = startPosition;
+			aboveTween.setValue(property, abovePosition);
 
-			startY = belowY;
-			aboveLimit = (aboveY - belowY) * STIFFNESS;
+			startPosition = belowPosition;
+			aboveLimit = (abovePosition - belowPosition) * STIFFNESS;
 			
 			index = n;
 			
@@ -268,7 +276,7 @@ package alecmce.list.extensions
 		
 		private function onMouseUp(event:MouseEvent):void
 		{
-			dragTween.setValue("y", startY);
+			dragTween.setValue(property, startPosition);
 			
 			stage.removeEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
 			stage.removeEventListener(MouseEvent.MOUSE_UP, onMouseUp);
