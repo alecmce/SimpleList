@@ -15,7 +15,7 @@ package
 		[Embed(source="../bin/list.swf")]
 		private var assetClass:Class;
 		
-		private var list:VList;
+		protected var list:VList;
 		private var scrollbar:VScrollbar;
 		
 		public function Example()
@@ -33,11 +33,22 @@ package
 
 			var content:MovieClip = info.loader.content as MovieClip;
 			
+			setup(content);
+		}
+		
+		protected function setup(content:MovieClip):void
+		{
 			list = new VList(content.list);
+			list.data = generateData();
 			
 			scrollbar = new VScrollbar(content.knob, content.groove);
 			scrollbar.reposition.add(onReposition);
-
+			scrollbar.setup(4, list.data.length);
+			scrollbar.isVisible = list.data.length > 4;
+		}
+		
+		protected function generateData():Vector.<ListDatum>
+		{
 			var data:Vector.<ListDatum> = new Vector.<ListDatum>();
 			data.push(new ExampleDatum("Alpha"));
 			data.push(new ExampleDatum("Beta"));
@@ -48,9 +59,7 @@ package
 			data.push(new ExampleDatum("Eta"));
 			data.push(new ExampleDatum("Theta"));
 			
-			list.data = data;
-			scrollbar.setup(4, data.length);
-			scrollbar.isVisible = data.length > 4;
+			return data;
 		}
 
 		private function onReposition(value:Number):void

@@ -3,13 +3,13 @@ package alecmce.list
 	import flash.display.MovieClip;
 	
 	/**
-	 * An internal helper class for the different list types
+	 * A helper class for the different list types
 	 * 
 	 * 2010 (c) Alec McEachran
 	 * 
 	 * Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
 	 */
-	final internal class ListItem
+	final public class ListItem
 	{
 		
 		public var mc:MovieClip;

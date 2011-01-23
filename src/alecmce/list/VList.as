@@ -1,5 +1,8 @@
 package alecmce.list
 {
+	import org.osflash.signals.ISignal;
+	import org.osflash.signals.Signal;
+
 	import flash.display.MovieClip;
 	
 	/**
@@ -14,7 +17,7 @@ package alecmce.list
 		private var container:MovieClip;
 		private var baseY:int;
 		
-		private var items:Vector.<ListItem>;
+		private var _items:Vector.<ListItem>;
 		private var count:uint;
 		
 		private var dy:int;
@@ -24,6 +27,8 @@ package alecmce.list
 		
 		private var _position:Number;
 		private var _index:int;
+		
+		private var _dataChanged:Signal;
 		
 		/**
 		 * Class Constructor
@@ -36,7 +41,17 @@ package alecmce.list
 			this.container = container;
 			this.baseY = container.y;
 			
+			_dataChanged = new Signal(VList);
+			
 			init();
+		}
+		
+		/**
+		 * exposes the list items
+		 */
+		public function get items():Vector.<ListItem>
+		{
+			return _items;
 		}
 		
 		/**
@@ -49,7 +64,10 @@ package alecmce.list
 			
 			_data = data;
 			dataLength = _data.length;
+			
 			updateItems();
+			
+			_dataChanged.dispatch(this);
 		}
 		
 		/**
@@ -102,8 +120,8 @@ package alecmce.list
 		{
 			var children:Vector.<MovieClip> = generateChildren(container);
 			this.dy = normalizeHeight(children);
-			this.items = generateItems(children);
-			this.count = items.length;
+			this._items = generateItems(children);
+			this.count = _items.length;
 			
 			_position = 0;
 			_index = 0;
@@ -189,14 +207,17 @@ package alecmce.list
 			while (i--)
 			{
 				var n:int = i + _index;
-				var item:ListItem = items[n % count];
+				var item:ListItem = _items[n % count];
 				
 				item.mc.y = n * dy;
 				item.datum = n < dataLength ? _data[n] : null;
 			}
 		}
 		
-		
+		public function get dataChanged():ISignal
+		{
+			return _dataChanged;
+		}
 		
 	}
 }
